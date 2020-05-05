@@ -1,6 +1,7 @@
 import sys
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic, QtGui, QtCore
 from visual import templates_window
+from visual import add_to_template_window
 
 global library
 
@@ -15,23 +16,48 @@ class MyWindow(QtWidgets.QMainWindow):
     def initUI(self):
         self.open_file.clicked.connect(self.show_dialog)
         self.templates_list.clicked.connect(self.show_library)
+        self.add_to_template.clicked.connect(self.add_to_template_function)
         self.models.clicked.connect(self.show_models)
         self.setWindowTitle('Argument analyzer')
 
     def show_dialog(self):
-        fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', '/home')[0]
-
-        if (fname != ''):
-            f = open(fname, 'r')
+        f_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', '/home')[0]
+        if f_name != '':
+            f = open(f_name, 'r')
             try:
                 with f:
                     data = f.read()
                     self.textEdit.setText(data)
+                    self.highlight_unions()
             except UnicodeDecodeError as ude:
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Information)
                 msg.setText("File is not UTF-encoded")
                 msg.exec_()
+
+    def highlight_unions(self):
+        cursor = self.textEdit.textCursor()
+        # Setup the desired format for matches
+        format = QtGui.QTextCharFormat()
+        format.setBackground(QtGui.QBrush(QtGui.QColor("yellow")))
+        # Setup the regex engine
+        pattern = "связано|Связано"
+        regex = QtCore.QRegExp(pattern)
+        # Process the displayed document
+        pos = 0
+        index = regex.indexIn(self.textEdit.toPlainText(), pos)
+        while (index != -1):
+            # Select the matched text and apply the desired format
+            cursor.setPosition(index)
+            cursor.movePosition(QtGui.QTextCursor.EndOfWord, 1)
+            cursor.mergeCharFormat(format)
+            # Move to the next match
+            pos = index + regex.matchedLength()
+            index = regex.indexIn(self.textEdit.toPlainText(), pos)
+
+    def add_to_template_function(self):
+        self.thesis_window = add_to_template_window.AddToTemplateWindow()
+        self.thesis_window.show()
 
     def show_library(self):
         self.templates = templates_window.TemplatesWindow()

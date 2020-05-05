@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, uic
-from dao import TemplatesDao
+from templates_service import TemplatesService
 
 
 class TemplatesWindow(QtWidgets.QDialog):
@@ -71,7 +71,7 @@ class TemplatesWindow(QtWidgets.QDialog):
     #     msg.exec_()
 
     def fill_list(self):
-        t_dao = TemplatesDao.TemplatesDao()
-        templates = t_dao.get_templates()
+        t_serv = TemplatesService.TemplatesService()
+        templates = t_serv.get_templates()
         for template in templates:
             self.listWidget.addItem(template.name)
